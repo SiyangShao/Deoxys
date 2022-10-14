@@ -163,7 +163,10 @@ void RoundFunction(uint8_t *state, uint8_t *key) {
 
 void Byte_Permutation_h(uint8_t *key) {
     uint8_t tmp[16];
-    tmp[1] = key[0], tmp[6] = key[1], tmp[11] = key[2], tmp[12] = key[3], tmp[5] = key[4], tmp[10] = key[5], tmp[15] = key[6], tmp[0] = key[7], tmp[9] = key[8], tmp[14] = key[9], tmp[3] = key[10], tmp[4] = key[11], tmp[13] = key[12], tmp[2] = key[13], tmp[7] = key[14], tmp[8] = key[15];
+    tmp[1] = key[0], tmp[6] = key[1], tmp[11] = key[2], tmp[12] = key[3];
+    tmp[5] = key[4], tmp[10] = key[5], tmp[15] = key[6], tmp[0] = key[7];
+    tmp[9] = key[8], tmp[14] = key[9], tmp[3] = key[10], tmp[4] = key[11];
+    tmp[13] = key[12], tmp[2] = key[13], tmp[7] = key[14], tmp[8] = key[15];
     for (size_t i = 0; i < 16; ++i) {
         key[i] = tmp[i];
     }
