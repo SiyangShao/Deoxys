@@ -61,6 +61,13 @@ static const uint8_t inv_M[16] = {
         11, 14, 9, 13,
         13, 11, 14, 9,
         9, 13, 11, 14};
+
+static const uint8_t RCON[17] = {
+        0x2f, 0x5e, 0xbc, 0x63,
+        0xc6, 0x97, 0x35, 0x6a,
+        0xd4, 0xb3, 0x7d, 0xfa,
+        0xef, 0xc5, 0x91, 0x39,
+        0x72};
 // Implement of round functions
 void AddRoundTweakey(uint8_t *state, const uint8_t *subtweakey) {
     for (size_t i = 0; i < 16; ++i) {
@@ -147,14 +154,83 @@ void InvShiftRows(uint8_t *state) {
     state[11] = state[15];
     state[15] = tmp;
 }
-void DeoxysEncryption(uint8_t *state, uint8_t *key) {
-    for (int i = 0; i < rounds; ++i) {
-        AddRoundTweakey(state, key);
-        SubBytes(state);
-        ShiftRows(state);
-        MixBytes(state);
-    }
+void RoundFunction(uint8_t *state, uint8_t *key) {
     AddRoundTweakey(state, key);
+    SubBytes(state);
+    ShiftRows(state);
+    MixBytes(state);
+}
+
+void Byte_Permutation_h(uint8_t *key) {
+    uint8_t tmp[16];
+    tmp[1] = key[0], tmp[6] = key[1], tmp[11] = key[2], tmp[12] = key[3], tmp[5] = key[4], tmp[10] = key[5], tmp[15] = key[6], tmp[0] = key[7], tmp[9] = key[8], tmp[14] = key[9], tmp[3] = key[10], tmp[4] = key[11], tmp[13] = key[12], tmp[2] = key[13], tmp[7] = key[14], tmp[8] = key[15];
+    for (size_t i = 0; i < 16; ++i) {
+        key[i] = tmp[i];
+    }
+}
+
+void XOR(uint8_t *subtweaky, const uint8_t *TK1, const uint8_t *TK2) {
+    for (size_t i = 0; i < 16; ++i) {
+        subtweaky[i] = TK1[i] ^ TK2[i];
+    }
+}
+
+void STK(uint8_t *key, int round) {
+    for (size_t i = 0; i < 4; ++i) {
+        key[i] ^= ((uint8_t) (1)) << ((uint8_t) (i));
+    }
+    for (size_t i = 4; i < 8; ++i) {
+        key[i] ^= RCON[round];
+    }
+}
+void LFSR2(uint8_t *key) {
+    for (size_t i = 0; i < 16; ++i) {
+        uint8_t x7 = (key[i] & (uint8_t) 0x80) >> 7;
+        uint8_t x5 = (key[i] & (uint8_t) 0x20) >> 5;
+        key[i] = (key[i] << 1) | (x7 ^ x5);
+    }
+}
+
+void LFSR3(uint8_t *key) {
+    for (size_t i = 0; i < 16; ++i) {
+        uint8_t x6 = (key[i] & (uint8_t) 0x40) >> 6;
+        uint8_t x0 = (key[i] & (uint8_t) 0x01);
+        key[i] = (key[i] >> 1) | ((x6 ^ x0) << 7);
+    }
+}
+void DeoxysEncryption(uint8_t *state, const uint8_t *key) {
+    uint8_t subtweakey[16], TK1[16], TK2[16], TK3[16];
+    size_t offset;
+#ifdef Deoxys_TBC_256
+    offset = 0;
+#elif Deoxys_TBC_384
+    offset = 16;
+#endif
+    for (size_t i = 0; i < 16; ++i) {
+#ifdef Deoxys_TBC_384
+        TK3[i] = key[i];
+#endif
+        TK2[i] = key[i + offset];
+        TK1[i] = key[i + 16 + offset];
+    }
+
+    for (int i = 0; i < rounds; ++i) {
+        XOR(subtweakey, TK1, TK2);
+#ifdef Deoxys_TBC_384
+        XOR(subtweakey, subtweakey, TK3);
+#endif
+        STK(subtweakey, i);
+        RoundFunction(state, subtweakey);
+        Byte_Permutation_h(TK1);
+        LFSR2(TK2);
+        Byte_Permutation_h(TK2);
+#ifdef Deoxys_TBC_384
+        LFSR3(TK3);
+        Byte_Permutation_h(TK3);
+#endif
+    }
+    STK(subtweakey, rounds);
+    AddRoundTweakey(state, subtweakey);
 }
 
 void DeoxysDecryption(uint8_t *state, uint8_t *key) {
