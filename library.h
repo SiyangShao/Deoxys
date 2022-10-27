@@ -5,8 +5,18 @@
 /**
  * Defines
  */
-#define Deoxys_TBC_256 1
-// #define Deoxys_TBC_384 1
+#define Deoxys_I_128
+// #define Deoxys_I_256
+// #define Deoxys_AE1
+// #define Deoxys_II_128
+// #define Deoxys_II_256
+// #define Deoxys_AE2
+#if defined(Deoxys_I_128) || defined(Deoxys_II_128)
+#define Deoxys_TBC_256
+#endif
+#if defined(Deoxys_I_256) || defined(Deoxys_AE1) || defined(Deoxys_II_256) || defined(Deoxys_AE2)
+#define Deoxys_TBC_384 1
+#endif
 #define Block_size 128
 #if defined(Deoxys_TBC_256)
 #define k_plus_t 256
@@ -41,7 +51,7 @@ void RoundFunction(uint8_t *state, uint8_t *key);
 
 void Byte_Permutation_h(uint8_t *key);
 
-void XOR(uint8_t *subtweaky, const uint8_t *TK1, const uint8_t *TK2);
+void XOR(uint8_t *subtweakey, const uint8_t *TK1, const uint8_t *TK2);
 
 void STK(uint8_t *key, int round);
 

@@ -3,4 +3,4 @@ project(Deoxys C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_library(Deoxys library.c)
+add_library(Deoxys library.c test.c)
