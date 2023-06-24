@@ -1,22 +1,3 @@
-# CC = clang
-# CFLAGS = -O3 -march=alderlake
-
-# SRCS = main.c Deoxys.c
-
-# all: Deoxys
-
-# Deoxys: $(SRCS)
-# 	$(CC) $(CFLAGS) $^ -o $@
-
-# test: 
-# 	make clean
-# 	make
-# 	./Deoxys < input > output
-# 	diff output ref-output
-
-# clean:
-# 	rm -f Deoxys
-# 	rm -f output
 CC = clang
 CFLAGS = -O3 -march=alderlake
 
