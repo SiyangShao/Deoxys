@@ -1,5 +1,5 @@
 ## Deoxys
-The repository contains an implementation of the Deoxys algorithm in the C language, utilizing Intel Intrinsics.
+The repository includes an implementation of Deoxys using Intel Intrinsics and performs encryption on a unit of 6 blocks.
 
 ## Contents
 The repository includes the following files:
